@@ -1,7 +1,7 @@
 {
   "name": "myObject",
   "version": "0.0.0",
-  "description": "",
+  "description": "JSON serialization to schema-less MySQL.\nmyObject lets you store, load, and search hierarchical data, represented by JSON objects, in a MySQL table.  Conceptually, you can consider the data stored in myObject as one, gigantic, JSON object.",
   "main": "index.js",
   "dependencies": {
     "async": "^1.2.0",
@@ -11,6 +11,12 @@
   "scripts": {
     "test": "js tests"
   },
-  "author": "",
-  "license": "gplv3"
+  "author": "Atomic8Ball",
+  "license": "gplv3",
+  "keywords": ["MySQL", "JSON"],
+  "homepage": "https://github.com/atomic8ball/myObject",
+  "repository" :
+  { "type" : "git"
+  , "url" : "https://github.com/atomic8ball/myObject"
+  }
 }

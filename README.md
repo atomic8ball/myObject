@@ -49,10 +49,30 @@ Running the script [schema.sql](https://github.com/atomic8ball/myObject/blob/mas
 
 ## Documentation
 
+* [`initializer`](#initializer)
 * [`store`](#store)
 * [`load`](#load)
 * [`search`](#search)
 * [`end`](#end)
+
+<a name="initializer" />
+### initializer(connectionInfo)
+
+When you `require` my-object, it returns function that, when called with database connection info, returns an object with the rest of the functions closed over a connection pool.  In other words, you have to initialize the require call with the connection info.
+
+__Arguments__
+
+* `connectionInfo` - An object containing the connection info. The values are passed directly to [mysql](https://github.com/felixge/node-mysql/#pooling-connections).  The minimum required values are:
+	* `host`
+	* `user`
+	* `password`
+	* `database`
+
+The `supportBigNumbers` option is required, and will be set `true` regardless of what you pass in.
+* The following values are set by default (and were optimal in my use case) but may be overridden:
+	* `connectionLimit`: 60
+	* `connectTimeout:` 60000
+	* `acquireTimeout`: 60000
 
 <a name="store" />
 ### store(key, value, callback)

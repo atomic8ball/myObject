@@ -17,9 +17,9 @@ var merge = function() {
 
 
 var sqlText = {
-	read: fs.readFileSync('read.sql', 'utf-8').replace(/^\uFEFF/, ''),
-	write: fs.readFileSync('write.sql', 'utf-8').replace(/^\uFEFF/, ''),
-	search: fs.readFileSync('search.sql', 'utf-8').replace(/^\uFEFF/, ''),
+	read: fs.readFileSync(__dirname + '/read.sql', 'utf-8').replace(/^\uFEFF/, ''),
+	write: fs.readFileSync(__dirname + '/write.sql', 'utf-8').replace(/^\uFEFF/, ''),
+	search: fs.readFileSync(__dirname + '/search.sql', 'utf-8').replace(/^\uFEFF/, ''),
 }; // sqlText
 
 

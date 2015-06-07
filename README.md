@@ -3,7 +3,7 @@ JSON serialization to schema-less MySQL
 
 myObject lets you store, load, and search hierarchical data, represented by JSON objects, in a MySQL table.  Conceptually, you can consider the data stored in myObject as one, gigantic, JSON object.
 
-## myObject is not an ORM tool.
+## myObject is not an ORM tool: it stores a hierarchical representation of JSON objects
 myObject doesn't map your data to a specific table structure (schema).  Instead, each key/value is stored along with a reference to its parent, allowing any structure to be stored and recreated, and allowing somewhat efficient searches across the key/value pairs.  The project is used by us with [Node.js](http://nodejs.org) and can be installed with `npm install my-object`, but the schema and stored procedures may prove useful to any language or environment that can use MySQL.
 
 ## Quick Examples

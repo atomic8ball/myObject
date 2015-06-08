@@ -155,7 +155,7 @@ Ends the underlying connection pool to MySQL, closing all connections.  Used mai
 
 __Arguments__
 
-* `callback(err)` - A *optional* function that is called when the pool has closed all connections. If an error has occured `err` will be truthy and contain details.  If `err` is falsey you can assume success.
+* `callback(err)` - An *optional* function that is called when the pool has closed all connections. If an error has occured `err` will be truthy and contain details.  If `err` is falsey you can assume success.
 
 __Example__
 

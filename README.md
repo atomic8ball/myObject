@@ -77,7 +77,7 @@ The `supportBigNumbers` option is required, and will be set `true` regardless of
 __Example__
 
 ```javascript
-var myo = require('./index')({
+var myo = require('my-object')({
 		host: env('TEST_HOST'),
 		user: env('TEST_USER'),
 		password: env('TEST_PASSWORD'),

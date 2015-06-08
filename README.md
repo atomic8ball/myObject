@@ -74,6 +74,18 @@ The `supportBigNumbers` option is required, and will be set `true` regardless of
 	* `connectTimeout:` 60000
 	* `acquireTimeout`: 60000
 
+__Example__
+
+```javascript
+var myo = require('./index')({
+		host: env('TEST_HOST'),
+		user: env('TEST_USER'),
+		password: env('TEST_PASSWORD'),
+		database: env('TEST_DATABASE'),
+		port: process.env['TEST_PORT'] || 3306,
+	}); // myo
+```
+
 <a name="store" />
 ### store(key, value, callback)
 

@@ -19,6 +19,7 @@ var merge = function() {
 var sqlText = {
 	read: fs.readFileSync(__dirname + '/read.sql', 'utf-8').replace(/^\uFEFF/, ''),
 	write: fs.readFileSync(__dirname + '/write.sql', 'utf-8').replace(/^\uFEFF/, ''),
+	cleanup: fs.readFileSync(__dirname + '/cleanup.sql', 'utf-8').replace(/^\uFEFF/, ''),
 	search: fs.readFileSync(__dirname + '/search.sql', 'utf-8').replace(/^\uFEFF/, ''),
 }; // sqlText
 
@@ -33,7 +34,9 @@ module.exports = function(cx) {
 	}, cx, { // user supplied connection info
 		// required options
 		supportBigNumbers: true,
+		multipleStatements: true,
 	})); // pool
+
 
 	var doSql = function(sql, params, cb) {
 		pool.query(sql, params, function(err, results) {
@@ -43,24 +46,45 @@ module.exports = function(cx) {
 		}); // query
 	}; // doSql
 
+
+	var storePrime = function(k, v1) {
+		var v = JSON.parse(JSON.stringify(v1)),
+			t = typeof v,
+			t1 = ((t === 'boolean' || (t === 'number' && (isNaN(v) || v === Infinity || v === -Infinity))) ? v + '' //
+				: (t === 'object' && v.length) ? 'array' //
+				: t),
+			number = (t1 === 'number' ? v : null),
+			string = (t1 === 'string' ? v : null);
+
+		var sql = mysql.format(sqlText.write, [k, t1, number, string]);
+
+		return (t1 !== 'object' && t1 !== 'array') ? sql //
+			: Object.keys(v).reduce(function(p, c) {
+				return p + storePrime(k + '.' + c, v[c]);
+			}, sql); // reduce
+	}; // storePrime
+
+
+	var activeWrites = {};
+
+	var writeCount = 0;
+
+
 	return {
-		store: function store(k, v1, cb) {
-			var v = JSON.parse(JSON.stringify(v1)),
-				t = typeof v,
-				t1 = ((t === 'boolean' || (t === 'number' && (isNaN(v) || v === Infinity || v === -Infinity))) ? v + '' //
-					: (t === 'object' && v.length) ? 'array' //
-					: t),
-				number = (t1 === 'number' ? v : null),
-				string = (t1 === 'string' ? v : null);
-			doSql(sqlText.write, [k, t1, number, string], function(err) {
-				return err ? cb(err) //
-					: (t1 !== 'object' && t1 !== 'array') ? cb() //
-					: async.parallel(Object.keys(v).map(function(k1) {
-						return function(cb) {
-							store(k + '.' + k1, v[k1], cb);
-						}; // return
-					}), cb); // parallel
-			}); // doSql
+		store: function (k, v1, cb) {
+			var sql = 'start transaction;' + storePrime(k, v1) + 'commit;';
+
+			if (++writeCount > 10000) {
+				writeCount = 0;
+				sql += sqlText.cleanup;
+			} // if
+
+			doSql(sql, null, function(err) {
+				return err ? setImmediate(function() {
+						doSql(sql, null, cb);
+					}) // setImmediate				
+					: cb(err);
+			}); // doSql			
 		}, // store
 
 		load: function(k, cb) {

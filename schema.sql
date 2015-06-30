@@ -23,7 +23,7 @@ delimiter ;;
 drop procedure if exists readkey;;
 create procedure readkey(in _key longtext)
 begin
-	set tx_isolation='READ-UNCOMMITTED';
+	set tx_isolation='READ-COMMITTED';
 	set @key := _key, @parent := 1, @id = null;
 
 	while length(@key) > 0 do
@@ -75,6 +75,7 @@ begin
         from okeys k
         inner join res2 r
 			on r.id = k.parent
+            and k.type != 'undefined'
 		where k.id not in (
 			select id
             from res3
@@ -99,7 +100,7 @@ end
 drop procedure if exists writekey;;
 create procedure writekey(in _key longtext, type nvarchar(9), number float, string longtext)
 begin
-	set tx_isolation='READ-UNCOMMITTED';
+	set tx_isolation='REPEATABLE-READ';
 	set @key := _key, @parent := 1, @id = 0, @type = type, @number = number, @string = string;
 
 	while length(@key) > 0 do
@@ -125,9 +126,13 @@ begin
 		end while;
         set @parent := @id;
 	end while;
-    
-    delete from okeys
+  
+	update okeys
+    set type = 'undefined'
     where parent = @id;
+    
+--    delete from okeys
+--    where parent = @id;
 
 	update okeys
     set type = @type, number = @number, string = @string

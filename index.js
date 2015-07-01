@@ -5,6 +5,9 @@ var mysql = require('mysql'),
 	async = require('async');
 
 
+var RETRIES = 0;
+
+
 var merge = function() {
 	return [].slice.apply(arguments).reduce(function(p, c) {
 		return (typeof c !== 'object' || typeof p !== 'object') ? c //
@@ -71,7 +74,7 @@ module.exports = function(cx) {
 
 
 	return {
-		store: function (k, v1, cb) {
+		store: function(k, v1, cb) {
 			var sql = 'start transaction;' + storePrime(k, v1) + 'commit;';
 
 			if (++writeCount > 10000) {
@@ -79,12 +82,12 @@ module.exports = function(cx) {
 				sql += sqlText.cleanup;
 			} // if
 
-			doSql(sql, null, function(err) {
-				return err ? setImmediate(function() {
-						doSql(sql, null, cb);
-					}) // setImmediate				
-					: cb(err);
-			}); // doSql			
+			(function tryDoSql(tries) {
+				doSql(sql, null, function(err) {
+					return (err && tries) ? tryDoSql(tries - 1) //
+						: cb(err);
+				}); // doSql
+			})(RETRIES); // tryDoSql
 		}, // store
 
 		load: function(k, cb) {

@@ -4,7 +4,7 @@ create table if not exists okeys (
 	parent bigint unsigned, 
 	name nvarchar(255) not null,
 	csname integer unsigned not null,
-	type nvarchar(9) not null,
+	type enum('NaN','Infinity','-Infinity','true','false','number','string','object','array'), 
 	number float,
 	string longtext
 );

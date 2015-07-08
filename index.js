@@ -5,7 +5,7 @@ var mysql = require('mysql'),
 	async = require('async');
 
 
-var RETRIES = 0;
+var RETRIES = 1;
 
 
 var merge = function() {
@@ -54,6 +54,7 @@ module.exports = function(cx) {
 		var v = JSON.parse(JSON.stringify(v1)),
 			t = typeof v,
 			t1 = ((t === 'boolean' || (t === 'number' && (isNaN(v) || v === Infinity || v === -Infinity))) ? v + '' //
+				: (t === 'object' && !v) ? 'null' //
 				: (t === 'object' && v.length) ? 'array' //
 				: t),
 			number = (t1 === 'number' ? v : null),
@@ -84,6 +85,7 @@ module.exports = function(cx) {
 
 			(function tryDoSql(tries) {
 				doSql(sql, null, function(err) {
+					if (err) console.log('write error', err);
 					return (err && tries) ? tryDoSql(tries - 1) //
 						: cb(err);
 				}); // doSql
@@ -92,6 +94,7 @@ module.exports = function(cx) {
 
 		load: function(k, cb) {
 			doSql(sqlText.read, [k], function(err, data) {
+				if (err) console.log('read error', err);
 				if (err || !data || !data.length) return cb(err);
 				var o, names = {};
 				data[0].forEach(function(row) {

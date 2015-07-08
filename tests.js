@@ -41,6 +41,11 @@ var tests = {
 	largeString: fs.readFileSync('ipsum.txt', {
 		encoding: 'utf8',
 	}), // largeString
+	simpleNull: null,
+	complexNull: {
+		5: null,
+		bob: 'sometimes',
+	}, // complexNul
 }; // tests
 
 
@@ -53,7 +58,7 @@ var originalTests = Object.keys(tests),
 			tests[key + '-' + i] = tests[key];
 		}; // return
 	}; // addTest
-	
+
 
 for (var i = 0; i < ITERATIONS; ++i)
 	originalTests.forEach(addTest(i));
@@ -99,7 +104,7 @@ var end = function(err) {
 
 async.parallel(Object.keys(tests).map(makeTest), function(err) {
 	if (err) return end(err);
-	
+
 	async.parallel([{
 		k: 'name',
 		v: 'Dennis'

@@ -4,14 +4,14 @@ create table if not exists okeys (
 	parent bigint unsigned, 
 	name nvarchar(255) not null,
 	csname integer unsigned not null,
-	type enum('NaN','Infinity','-Infinity','true','false','number','string','object','array'), 
+	type enum('NaN','Infinity','-Infinity','true','false','number','string','object','array', 'null'), 
 	number float,
 	string longtext
 );
 
 alter table okeys add foreign key (parent) references okeys(id) on delete cascade;
 
-create index ix_okeys_parent_csname on okeys(parent, csname);
+-- create index ix_okeys_parent_csname on okeys(parent, csname);
 create index ix_okeys_id_parent on okeys(id, parent);
 create unique index ix_okeys_parent_name on okeys(parent, name(255));
 
@@ -100,7 +100,7 @@ end
 drop procedure if exists writekey;;
 create procedure writekey(in _key longtext, type nvarchar(9), number float, string longtext)
 begin
-	set tx_isolation='REPEATABLE-READ';
+	set tx_isolation='READ-COMMITTED';
 	set @key := _key, @parent := 1, @id = 0, @type = type, @number = number, @string = string;
 
 	while length(@key) > 0 do
@@ -115,7 +115,7 @@ begin
         while @id = 0 do 
 			select id into @id
 			from okeys 
-			where ifnull(parent, -1) = ifnull(@parent, -1)
+			where parent = @parent
 				and csname = crc32(@part) 
 				and name = @part;
 			if @id = 0 then
@@ -130,9 +130,6 @@ begin
 	update okeys
     set type = 'undefined'
     where parent = @id;
-    
---    delete from okeys
---    where parent = @id;
 
 	update okeys
     set type = @type, number = @number, string = @string

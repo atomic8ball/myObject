@@ -4,7 +4,7 @@ create table if not exists okeys (
 	parent bigint unsigned, 
 	name nvarchar(255) not null,
 	csname integer unsigned not null,
-	type enum('NaN','Infinity','-Infinity','true','false','number','string','object','array', 'null'), 
+	type enum('NaN','Infinity','-Infinity','true','false','number','string','object','array', 'null', 'undefined'), 
 	number float,
 	string longtext
 );
@@ -101,6 +101,7 @@ drop procedure if exists writekey;;
 create procedure writekey(in _key longtext, type nvarchar(9), number float, string longtext)
 begin
 	set tx_isolation='READ-COMMITTED';
+    set session sql_mode = 'STRICT_ALL_TABLES';
 	set @key := _key, @parent := 1, @id = 0, @type = type, @number = number, @string = string;
 
 	while length(@key) > 0 do

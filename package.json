@@ -1,6 +1,6 @@
 {
   "name": "my-object",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "JSON serialization to schema-less MySQL.\nmyObject lets you store, load, and search hierarchical data, represented by JSON objects, in a MySQL table.  Conceptually, you can consider the data stored in myObject as one, gigantic, JSON object.",
   "main": "index.js",
   "dependencies": {

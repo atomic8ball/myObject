@@ -18,12 +18,40 @@ var merge = function() {
 	}, {}); // return reduce
 }; // merge
 
+var buildObject = function(data) {
+	var o, names = {};
+	data.forEach(function(row) {
+					var parentName = names[row.parent],
+						name = (parentName ? parentName + '.' : '') + row.name,
+						t = row.type,
+						v = (t === 'NaN' ? NaN //
+							: t === 'Infinity' ? Infinity //
+							: t === '-Infinity' ? -Infinity //
+							: t === 'true' ? true //
+							: t === 'false' ? false //
+							: t === 'number' ? row.number //
+							: t === 'string' ? row.string //
+							: t === 'object' ? {} //
+							: t === 'array' ? [] //
+							: null);
+					names[row.id] = name;
+					if (o) {
+						var target = names[row.parent].split('.').slice(1).reduce(function(p, c) {
+							return p[c];
+						}, o); // reduce
+						target[row.name] = v;
+					} else o = v;
+				}); // forEach
+				return o;
+};
+
 
 var sqlText = {
 	read: fs.readFileSync(__dirname + '/read.sql', 'utf-8').replace(/^\uFEFF/, ''),
 	write: fs.readFileSync(__dirname + '/write.sql', 'utf-8').replace(/^\uFEFF/, ''),
 	cleanup: fs.readFileSync(__dirname + '/cleanup.sql', 'utf-8').replace(/^\uFEFF/, ''),
 	search: fs.readFileSync(__dirname + '/search.sql', 'utf-8').replace(/^\uFEFF/, ''),
+	multisearchload: fs.readFileSync(__dirname + '/multisearchload.sql', 'utf-8').replace(/^\uFEFF/, ''),
 }; // sqlText
 
 
@@ -31,7 +59,7 @@ module.exports = function(cx) {
 	// this is the connection pool for MySQL
 	var pool = mysql.createPool(merge({
 		// defaults
-		connectionLimit: 60,
+		connectionLimit: 20,
 		connectTimeout: 60000,
 		acquireTimeout: 60000,
 	}, cx, { // user supplied connection info
@@ -96,29 +124,7 @@ module.exports = function(cx) {
 			doSql(sqlText.read, [k], function(err, data) {
 				if (err) console.log('read error', err);
 				if (err || !data || !data.length) return cb(err);
-				var o, names = {};
-				data[0].forEach(function(row) {
-					var parentName = names[row.parent],
-						name = (parentName ? parentName + '.' : '') + row.name,
-						t = row.type,
-						v = (t === 'NaN' ? NaN //
-							: t === 'Infinity' ? Infinity //
-							: t === '-Infinity' ? -Infinity //
-							: t === 'true' ? true //
-							: t === 'false' ? false //
-							: t === 'number' ? row.number //
-							: t === 'string' ? row.string //
-							: t === 'object' ? {} //
-							: t === 'array' ? [] //
-							: null);
-					names[row.id] = name;
-					if (o) {
-						var target = names[row.parent].split('.').slice(1).reduce(function(p, c) {
-							return p[c];
-						}, o); // reduce
-						target[row.name] = v;
-					} else o = v;
-				}); // forEach
+				var o = buildObject(data[0]);
 				cb(null, o);
 			}); // doSql
 		}, // load
@@ -131,6 +137,25 @@ module.exports = function(cx) {
 				cb(err, data && data.length ? data[0] : undefined);
 			}); // doSql
 		}, // search
+		
+		multisearchload: function(keys, value, depth, cb) {
+			if(!depth) depth = 0;
+			var searchkeys = keys.join('|'),
+				t = typeof value,
+				s = (t === 'string' ? value : null),
+				n = (t === 'number' ? value : null);
+			doSql(sqlText.multisearchload, [searchkeys, s, n, depth], function(err, data) {
+				if (err) console.log(err);
+				var theStuff;
+				if (data.length > 2) {
+					theStuff = data[0].reduce(function(p,c,i) {
+					p[c.name] = buildObject(data[i+1]);
+					return p;
+				}, {});
+			} else theStuff = data[0];
+				cb(err, theStuff);
+			}); // doSql
+		}, // multisearchload
 
 		end: function(cb) {
 			pool.end(cb);

@@ -49,7 +49,7 @@ var tests = {
 }; // tests
 
 
-var ITERATIONS = 100;
+var ITERATIONS = 3;
 
 
 var originalTests = Object.keys(tests),

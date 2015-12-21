@@ -13,7 +13,7 @@ var myo = require('./index')({
 		port: process.env['TEST_PORT'] || 3306,
 }); // myo
 	
-myo.multisearchload(['baz'], 7, null, function(err, data) {
+myo.multisearchload(['baz'], 7, 0, function(err, data) {
 	if(err) return errHandler(err);
 	console.log(data);
 	myo.end();

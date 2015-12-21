@@ -152,7 +152,9 @@ module.exports = function(cx) {
 					p[c.name] = buildObject(data[i+1]);
 					return p;
 				}, {}); // reduce
-			} else theStuff = data[0];
+			} else theStuff = data[0].map(function(c) {
+				return c.name;
+				});
 				cb(err, theStuff);
 			}); // doSql
 		}, // multisearchload

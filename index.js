@@ -151,7 +151,7 @@ module.exports = function(cx) {
 					theStuff = data[0].reduce(function(p,c,i) {
 					p[c.name] = buildObject(data[i+1]);
 					return p;
-				}, {});
+				}, {}); // reduce
 			} else theStuff = data[0];
 				cb(err, theStuff);
 			}); // doSql

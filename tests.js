@@ -143,20 +143,17 @@ async.parallel(Object.keys(tests).map(makeTest), function(err) {
 		}, {
 			k: ['age', 'old'],
 			v: 37
-		}, {
-			k: ['old', 'woman'],
-			v: false
 		}].map(function(c) {
 			return function(cb) {
 			console.log('Multisearch', c.k, '=', c.v);
 			myo.multisearchload(c.k, c.v, null, function(err, data) {
 				if(err) return cb(err);
 				data.forEach(function(result) {
-					if(!(result.split('.').pop() === c.k[0] || c.k[1])) console.log(result, 'is not expected result!');
+					if(!(result.split('.').pop() === c.k[0] || c.k[1])) return cb(result + ' is not expected result!');
 				}); // forEach
 				try {
-					assert(data.length = (ITERATIONS + 1) * 2, 'Incorrect amount of results for', c.k, '=', c.v);
-				} catch(ex) {
+					assert(data.length >= (ITERATIONS + 1) * 2, 'Incorrect amount of results for ' + c.k + ' = ' + c.v);
+				} catch (ex) {
 					return cb(ex);
 				} // try/catch
 				console.log('Multisearch - paths only for', c.k, 'successful');
@@ -166,10 +163,10 @@ async.parallel(Object.keys(tests).map(makeTest), function(err) {
 						var resultkey = result.split('.').pop();
 						(resultkey === c.k[0]) ? assert.deepEqual(data[result], tests.complexArray)
 							: (resultkey === c.k[1]) ? assert.deepEqual(data[result], tests.anotherPeasant)
-							: console.log(result, 'is not expected result!');
+							: return cb(result + ' is not expected result!');
 					}); // forEach
 					try {
-						assert(data.length = (ITERATIONS + 1) * 2, 'Incorrect amount of results for', c.k, '=', c.v);
+						assert(Object.keys(data).length >= (ITERATIONS + 1) * 2, 'Incorrect depth2 amount of results for ' + c.k + ' = ' + c.v);
 					} catch(ex) {
 						return cb(ex);
 					} // try/catch
@@ -179,6 +176,7 @@ async.parallel(Object.keys(tests).map(makeTest), function(err) {
 			}); // multisearchload null
 		}; // return
 		}), function(err) {
+			if (err) console.log(err);
 			console.log('start multi-write');
 			async.parallel(multiWrite, end);
 		}); // parallel multisearch

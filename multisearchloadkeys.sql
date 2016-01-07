@@ -5,6 +5,10 @@ create procedure multisearchload(in _keys longtext, in _string longtext, in _num
 	create temporary table searchkeys(_key nvarchar(128) not null, csname integer unsigned not null) engine = memory;
 	drop table if exists searchres;
 	create temporary table searchres(parent bigint unsigned, name nvarchar(1024) not null) engine = memory;
+	drop table if exists alphasearchres;
+	create temporary table alphasearchres(name nvarchar(1024) not null) engine = memory;
+	drop table if exists loadkeys;
+	create temporary table loadkeys(loadkey nvarchar(1024) not null) engine = memory;
 	
 	set sql_safe_updates := 0;
 	
@@ -37,18 +41,23 @@ create procedure multisearchload(in _keys longtext, in _string longtext, in _num
 		set r.name = concat(o.name,'.', r.name), r.parent = o.parent
 		where r.parent != 1;
 	end while;
+	
+	insert alphasearchres
+	select name
+	from searchres
+	order by name;
     
     select name
-    from searchres;
+    from alphasearchres;
     
     if _depth != 0 then
-		set @depth = _depth;
 		set @name = 'true';
     
 		while length(@name) > 0 do
 			set @name = '';
+			set @depth = _depth;
 			select name into @name
-			from searchres
+			from alphasearchres
 			limit 1;
 			if @depth < 0 then
 				set @length = 0, @lengthtest = @name, @lengthtestpart = '';
@@ -81,11 +90,29 @@ create procedure multisearchload(in _keys longtext, in _string longtext, in _num
                 set @i = @i + 1;
             end while;
             if length(@loadkey) > 0 then
-  				call readkey(@loadkey);
+				insert loadkeys
+				value(@loadkey);
  			end if;
 			set sql_safe_updates := 0;
-			delete from searchres
+			delete from alphasearchres
 			where name = @name;
+		end while;
+		
+		select loadkey
+		from loadkeys;
+		
+		set @loadkey = 'dummy';
+		while length(@loadkey) > 0 do
+			set @loadkey = '';
+			select loadkey into @loadkey
+			from loadkeys
+			limit 1;
+			if length(@loadkey) > 0 then
+				call readkey(@loadkey);
+			end if;
+			set sql_safe_updates := 0;
+			delete from loadkeys
+			where loadkey = @loadkey;
 		end while;
     end if;
     
@@ -93,6 +120,8 @@ create procedure multisearchload(in _keys longtext, in _string longtext, in _num
     
     drop table if exists searchkeys;
     drop table if exists searchres;
+    drop table if exists alphasearchres;
+    drop table if exists loadkeys;
     
 end;;
 delimiter ;

@@ -148,13 +148,15 @@ module.exports = function(cx) {
 				if (err) console.log(err);
 				var theStuff;
 				if (data.length > 2) {
+					var uniqueCounter = 0;
 					theStuff = data[0].reduce(function(p,c,i) {
-					p[c.name] = buildObject(data[i+1]);
+						if(!(i === 0 || data[0][i].name.split('.').slice(0,depth).join('.') === data[0][i-1].name.split('.').slice(0,depth).join('.'))) uniqueCounter++;
+						p[c.name] = buildObject(data[uniqueCounter+2]);
 					return p;
 				}, {}); // reduce
 			} else theStuff = data[0].map(function(c) {
 				return c.name;
-				});
+				}); // map
 				cb(err, theStuff);
 			}); // doSql
 		}, // multisearchload

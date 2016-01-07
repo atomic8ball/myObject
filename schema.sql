@@ -268,9 +268,6 @@ create procedure multisearchload(in _keys longtext, in _string longtext, in _num
 			where name = @name;
 		end while;
 		
-		select loadkey
-		from loadkeys;
-		
 		set @loadkey = 'dummy';
 		while length(@loadkey) > 0 do
 			set @loadkey = '';

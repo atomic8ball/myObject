@@ -151,7 +151,7 @@ module.exports = function(cx) {
 					var uniqueCounter = 0;
 					theStuff = data[0].reduce(function(p,c,i) {
 						if(!(i === 0 || data[0][i].name.split('.').slice(0,depth).join('.') === data[0][i-1].name.split('.').slice(0,depth).join('.'))) uniqueCounter++;
-						p[c.name] = buildObject(data[uniqueCounter+2]);
+						p[c.name] = buildObject(data[uniqueCounter+1]);
 					return p;
 				}, {}); // reduce
 			} else theStuff = data[0].map(function(c) {
